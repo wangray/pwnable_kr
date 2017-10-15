@@ -22,7 +22,7 @@ This repo will hold my solutions for the pwnable.kr wargames
 - [ ] codemap
 - [ ] memcpy
 - [x] asm
-- [ ] unlink
+- [x] unlink
 
 ## [Rookiss]
 - [ ] brain fuck
