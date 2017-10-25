@@ -3,12 +3,12 @@
 This repo will hold my solutions for the pwnable.kr wargames
 
 ## [Toddler’s Bottle]
-- [ ] fd
-- [ ] collision
-- [ ] bof
-- [ ] flag
-- [ ] passcode
-- [ ] random
+- [x] fd
+- [x] collision
+- [x] bof
+- [x] flag
+- [x] passcode
+- [x] random
 - [ ] input
 - [ ] leg
 - [ ] mistake
