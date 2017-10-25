@@ -4,3 +4,5 @@
 *.nam
 *.til
 .gdb_history
+.ipynb_checkpoints/
+core
