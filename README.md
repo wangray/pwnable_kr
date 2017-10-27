@@ -10,14 +10,14 @@ This repo will hold my solutions for the pwnable.kr wargames
 - [x] passcode
 - [x] random
 - [ ] input
-- [ ] leg
-- [ ] mistake
-- [ ] shellshock
+- [x] leg
+- [x] mistake
+- [x] shellshock
 - [ ] coin1
 - [ ] blackjack
-- [ ] lotto
-- [ ] cmd1
-- [ ] cmd2
+- [x] lotto
+- [x] cmd1
+- [x] cmd2
 - [ ] uaf
 - [ ] codemap
 - [ ] memcpy
