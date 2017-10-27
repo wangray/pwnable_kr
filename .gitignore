@@ -7,4 +7,5 @@
 .ipynb_checkpoints/
 core
 a.out
-
+.pwntools-cache/
+.irssi/
