@@ -9,3 +9,4 @@ core
 a.out
 .pwntools-cache/
 .irssi/
+.i64
