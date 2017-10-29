@@ -14,13 +14,13 @@ This repo will hold my solutions for the pwnable.kr wargames
 - [x] mistake
 - [x] shellshock
 - [ ] coin1
-- [ ] blackjack
+- [x] blackjack
 - [x] lotto
 - [x] cmd1
 - [x] cmd2
-- [ ] uaf
-- [ ] codemap
-- [ ] memcpy
+- [x] uaf
+- [x] codemap
+- [x] memcpy
 - [x] asm
 - [x] unlink
 
