@@ -9,4 +9,6 @@ core
 a.out
 .pwntools-cache/
 .irssi/
-.i64
+*.i64
+*.dmp
+*.idb
