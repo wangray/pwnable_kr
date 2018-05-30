@@ -25,7 +25,7 @@ This repo will hold my solutions for the pwnable.kr wargames
 - [x] unlink
 
 ## [Rookiss]
-- [ ] brain fuck
+- [x] brain fuck
 - [ ] md5 calculator
 - [ ] simple login
 - [ ] otp
@@ -34,7 +34,7 @@ This repo will hold my solutions for the pwnable.kr wargames
 - [ ] fsb
 - [ ] dragon
 - [ ] fix
-- [ ] syscall
+- [x] syscall
 - [ ] crypto1
 - [ ] echo1
 - [ ] echo2
