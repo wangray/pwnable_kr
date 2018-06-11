@@ -47,7 +47,7 @@ This repo will hold my solutions for the pwnable.kr wargames
 - [ ] rootkit
 - [ ] dos4fun
 - [ ] ascii
-- [ ] aeg
+- [x] aeg
 - [ ] coin2
 - [ ] maze
 - [ ] wtf
